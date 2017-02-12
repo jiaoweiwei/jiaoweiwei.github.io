@@ -61,6 +61,53 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-HEXO搭建个人博客" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/02/12/HEXO搭建个人博客/" class="article-date">
+  <time datetime="2017-02-12T12:09:00.000Z" itemprop="datePublished">2017-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/02/12/HEXO搭建个人博客/">HEXO搭建个人博客</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>经过本人走过的所走搭建个人博客的路，给大家总结一下HEXO搭建个人博客的步骤，避免朋友们在搭建的时候再不知所措。<br>一、配置环境<br>安装Node（必须）<br>为了方便，我们可以直接使用yum安装Node<br>yum install nodejs<br>安装完以后我们还需要安装npm<br>yum install npm</p>
+<p>安装Git（必须）<br>yum install git</p>
+<p>申请Github（必须）<br>首先朋友们需要去申请一个github账号，申请ok以后，下面的配置就安装下面的网址进行配置。<br><a href="https://pages.github.com/" target="_blank" rel="external">https://pages.github.com/</a><br>【注意：创建存储库时，一定要用你申请账号时用到的用户名，eg：username.github.io,如果存储库的第一部分不完全匹配您的用户名，它将无法正常工作，因此请确保相同】</p>
+<p>正式安装HEXO<br>sudo npm install -g hexo</p>
+<p>然后我们在随变找个地方创建一个文件夹【要记住位置哦】，进入到文件夹红，进行初始化<br>hexo init</p>
+<p>生成静态页面<br>继续在blog文件夹下执行命令<br>hexo generate （hexo g 也可以）</p>
+<p>启动本地服务器<br>hexo server （hexo s也可以）<br>此时我们在浏览器中输入你的ip地址，或域名<br>eg：<a href="http://ip地址[或域名]:4000" target="_blank" rel="external">http://ip地址[或域名]:4000</a><br>如果成功的话，我们就可以访问到一个没有样式的，简陋的页面，说明我们已经成功了，如果没有显示出来，那么就按照下面的网址，进行配置。【<a href="http://baixin.io/2015/08/HEXO%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/】" target="_blank" rel="external">http://baixin.io/2015/08/HEXO%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/】</a><br>【注意：我们在测试访问的时候，不要将server停止掉】</p>
+<p>然后需要朋友们手动配置些东西，我们需要输入下面三行命令<br>npm install hexo-renderer-ejs –save<br>npm install hexo-renderer-stylus –save<br>npm install hexo-renderer-marked –save<br>这时候再重新生成静态页面<br>hexo generate （或hexo g）<br>启动本地服务器<br>hexo server （或hexo s）<br>再刷新网址，就可以看到自己的博客了。</p>
+<p>配置Github<br>进入到blog文件中，编辑_config.yml<br>vim _config.yml<br>翻到最下面，改成下面显示的样子，【注意：每一个：后面都有空格】<br>deploy:<br>  type: git<br>  repository: 【此处填写你的github中clone or download中的地址，此处我填写的是git@开头的地址】<br>  branch :master<br>接下来设置git的用户名和绑定的email<br>git config –global user.name “github的用户名”<br>git config –global user.email “绑定的邮箱”<br>生成SSH秘钥过程<br>先查看是否已经有了ssh秘钥，输入命令<br>cd ~/.ssh<br>如果我们直接查看的话，blog文件夹中是空的，因为.ssh文件是一个隐藏文件，<br>如果没有此文件夹的话，我们需要生成秘钥<br>ssh-keygen -t rsa -C “github绑定的邮箱”<br>按三个回车，密码为空，<br>然后我们在查看.ssh文件夹中有一个文件，文件名为id_rsa.pub，打开文件，其中就是我们的秘钥。<br>将秘钥复制进去，添加到我们的github当中</p>
+<p>执行如下的命令才能使用git部署<br>npm install hexo-deployer-git –save<br>然后，执行配置命令。<br>hexo deploy<br>再到浏览器中刷新访问，就可以看到有样式的博客了。</p>
+<p>新建博客<br>在我们的blog文件夹中使用下面的命令，建立博客<br>hexo new “博客名称”<br>新建成功后，会给我们返回新建博客所在的路径。执行下面的命令，进入到博客所在的位置。会看到我们的博客名，并以md结尾的文件<br>cd source//_posts/<br>对博客进行编辑，<br>vim …….md<br>保存，<br>然后使用如下的两行命令，提交到github上去。<br>hexo g   或 hexo generate<br>hexo d   或 hexo deploy<br>完成以后，我们就在浏览器中访问，就可以看到我们自己写的博客了。<br>那么，搭建自己博客的一系列流程步骤，就说完了，大家可以借鉴一下。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/02/12/HEXO搭建个人博客/" data-id="ciz2p7ciz0000ixqk2emu4ltv" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Session-存入redis" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/02/12/Session-存入redis/" class="article-date">
@@ -121,7 +168,7 @@ public function gc(){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/02/12/Session-存入redis/" data-id="ciz2mlm780000d7qk6ixg3eag" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/02/12/Session-存入redis/" data-id="ciz2p7cj60001ixqk3gjv3btk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -189,7 +236,7 @@ public function gc(){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/02/12/ThinkPhp5-0的简单使用/" data-id="ciz2mlm7e0001d7qko48edqam" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/02/12/ThinkPhp5-0的简单使用/" data-id="ciz2p7cj90002ixqkq1l7zduf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -226,7 +273,7 @@ public function gc(){
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/02/12/git常用的命令行/" data-id="ciz2mlm7h0002d7qkif4lczv9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/02/12/git常用的命令行/" data-id="ciz2p7cjb0003ixqkwwyx3asj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -264,6 +311,10 @@ public function gc(){
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/02/12/HEXO搭建个人博客/">HEXO搭建个人博客</a>
+          </li>
         
           <li>
             <a href="/2017/02/12/Session-存入redis/">Session 存入redis</a>
