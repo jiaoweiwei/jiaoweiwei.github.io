@@ -61,6 +61,76 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Session-存入redis" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/02/12/Session-存入redis/" class="article-date">
+  <time datetime="2017-02-12T12:05:20.000Z" itemprop="datePublished">2017-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/02/12/Session-存入redis/">Session 存入redis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Session信息入Redis<br>Session简介<br>session，中文经常翻译为会话，其本来的含义是 指有始有终的一系列动作/消息，比如打电话时从拿起电话拨号到挂断电话这中间的一系列过程可以称之为一个session。有时候我们可以看到这样的话“在 一个浏览器会话期间，…”，这里的会话一词用的就是其本义，是指从一个浏览器窗口打开到关闭这个期间①。最混乱的是“用户（客户端）在一次会话期间”这样一句话，它可能指用户的一系列动作（般情况下是同某个具体目的相关的一系列动作，比如从登录到选购商品到结账登出这样一个网上购物的过程，有时候也 被称为一个transaction），然而有时候也可能仅仅是指一次连接，也有可能是指含义①，其中的差别只能靠上下文来推断②。 </p>
+<pre><code>然而当session一词与网络协议相关联时，它又往往隐含了“面向连接”和/或“保持状态”这样两个含义，“面向连接”指的是在通信双方在通信之前要先 建立一个通信的渠道，比如打电话，直到对方接了电话通信才能开始，与此相对的是写信，在你把信发出去的时候你并不能确认对方的地址是否正确，通信渠道不一 定能建立，但对发信人来说，通信已经开始了。“保持状态”则是指通信的一方能够把一系列的消息关联起来，使得消息之间可以互相依赖，比如一个服务员能够认 出再次光临的老顾客并且记得上次这个顾客还欠店里一块钱。这一类的例子有“一个TCP session”或者“一个POP3 session”③。 
+
+而到了web服务器蓬勃发展的时代，session在web开发语境下的语义又有了新的扩展，它的含义是指一类用来在客户端与服务器之间保持状态的解决方 案④。有时候session也用来指这种解决方案的存储结构，如“把xxx保存在session里”⑤。由于各种用于web开发的语言在一定程度上都提供 了对这种解决方案的支持，所以在某种特定语言的语境下，session也被用来指代该语言的解决方案，比如经常把Java里提供的javax.servlet.http.HttpSession简称为session⑥。 
+
+鉴于这种混乱已不可改变，本文中session一词的运用也会根据上下文有不同的含义，请大家注意分辨。 
+</code></pre><p>在本文中，使用中文“浏览器会话期间”来表达含义①，使用“session机制”来表达含义④，使用“session”表达含义⑤，使用具体的“HttpSession”来表达含义⑥<br>为什么要把SESSION保存在缓存<br>就PHP来说，语言本身支持的session是以文件的方式保存到磁盘文件中，保存在指定的文件夹中，保存的路径可以在配置文件中设置或者在程序中使用函数session_save_path()进行设置，但是这么做有弊端，<br>第一就是保存到文件系统中，效率低，只要有用到session就会从好多个文件中查找指定的sessionid，效率很低。<br>第二就是当用到多台服务器的时候可能会出现，session丢失问题（其实是保存在了其他服务器上）。<br>当然了，保存在缓存中可以解决上面的问题，如果使用PHP本身的session函数，可以使用 session_set_save_handler()函数很方便的对session的处理过程进行重新控制。如果不用php的session系列函数， 可以自己编写个类似的session函数，也是可以的，我现在做的这个项目就是这样，会根据用户的mid、登录时间进行求hash作为 sessionId，每次请求的时候都必须加上sessionId才算合法（第一次登录的时候是不需要的，这个时候会创建sessionId，返回给客户 端），这么做也很方便、简洁高效的。当然了，我这篇文章主要说的是在php自身的SESSION中”做做手脚”。<br>SESSION保存在缓存中<br>php将缓存保存到Redis中，可以使用配置文件，对session的处理和保存做修改，当然了，在程序中使用ini_set()函数去修改也可以，这个很方便测试，我这里就使用这种方式，当然了，要是生产环境还是建议使用配置文件。<br>如果想简单操作session入redis操作可以将一下代码运行一下<br>&lt;?php<br>ini_set(“session.save_handler”, “redis”);<br>ini_set(“session.save_path”, “tcp://localhost:6379”);<br>session_start();<br>header(“Content-type:text/html;charset=utf-8”);<br>$_SESSION[‘view’] = ‘zhangsan’;<br>echo $_SESSION[‘view’];<br>这里设置session.save_handler方式为redis，session.save_path为redis的地址和端口，设置之后刷新，再回头查看redis，会发现redis中的生成了sessionId，sessionId和浏览器请求的是一样的，<br> 如果是memcache<br>&lt;?php<br>ini_set(“session.save_handler”, “memcache”);<br>ini_set(“session.save_path”, “tcp://localhost:11211”);<br>session_start();<br>header(“Content-type:text/html;charset=utf-8”);<br>$_SESSION[‘view’] = ‘zhangsan’;<br>echo $_SESSION[‘view’];</p>
+<p>也可以使用<br>Session_set_save_handler(‘open’,’close’,’ read’,’ write’,’ destory’,’ gc’);<br>用法如下自定义一个Redis_session类<br>&lt;?php<br>class RedisSession{<br>    private $_redis = array(<br>        ‘handler’ =&gt; null, //数据库连接句柄<br>        ‘host’ =&gt; null,   //redis端口号<br>        ‘port’ =&gt; null,<br>    );<br>    public function __construct($array = array()){<br>        isset($array[‘host’])?$array[‘host’]:”false”;<br>        isset($array[‘port’])?$array[‘host’]:”false”;<br>        $this-&gt;_redis = array_merge($this-&gt;_redis, $array);<br>    }<br>    public function begin(){<br>        //设置session处理函数<br>        session_set_save_handler(<br>            array($this, ‘open’),<br>            array($this, ‘close’),<br>            array($this, ‘read’),<br>            array($this, ‘write’),<br>            array($this, ‘destory’),<br>            array($this, ‘gc’)<br>        );<br>    }<br>    public function open(){<br>        $redis = new Redis();<br>        $redis-&gt;connect($this-&gt;_redis[‘host’], $this-&gt;_redis[‘port’]);<br>        if(!$redis){<br>            return false;<br>        }</p>
+<pre><code>    $this-&gt;_redis[&apos;handler&apos;] = $redis;
+    $this-&gt;gc(null);
+    return true;
+}
+//关
+public function close(){
+    return $this-&gt;_redis[&apos;handler&apos;]-&gt;close();
+}
+//读
+public function read($session_id){
+    return $this-&gt;_redis[&apos;handler&apos;]-&gt;get($session_id);
+}
+//写
+public function write($sessionId, $sessionData){
+    return $this-&gt;_redis[&apos;handler&apos;]-&gt;set($sessionId, $sessionData);
+}
+public function destory($sessionId){
+    return $this-&gt;_redis[&apos;handler&apos;]-&gt;delete($sessionId) &gt;= 1 ? true : false;
+}
+public function gc(){
+    //获取所有sessionid，让过期的释放掉
+    $this-&gt;_redis[&apos;handler&apos;]-&gt;keys(&quot;*&quot;);
+    return true;
+}
+</code></pre><p>}<br>$ses = new RedisSession(array(‘host’=&gt;’127.0.0.1’,’port’=&gt;’6379’));<br>$ses-&gt;begin();<br>session_start();<br>$_SESSION[‘name’]=’zhangsan’;<br>echo $_SESSION[‘name’];</p>
+<p>这样就可以实现session数据如redis代码执行过程中必须安装redis才可以</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/02/12/Session-存入redis/" data-id="ciz2mlm780000d7qk6ixg3eag" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ThinkPhp5-0的简单使用" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/02/12/ThinkPhp5-0的简单使用/" class="article-date">
@@ -119,7 +189,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/02/12/ThinkPhp5-0的简单使用/" data-id="ciz2meami0000b3qkvyf557jq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/02/12/ThinkPhp5-0的简单使用/" data-id="ciz2mlm7e0001d7qko48edqam" class="article-share-link">Share</a>
       
       
     </footer>
@@ -156,7 +226,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/02/12/git常用的命令行/" data-id="ciz2meamp0001b3qkmxmfy4yl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/02/12/git常用的命令行/" data-id="ciz2mlm7h0002d7qkif4lczv9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -194,6 +264,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/02/12/Session-存入redis/">Session 存入redis</a>
+          </li>
         
           <li>
             <a href="/2017/02/12/ThinkPhp5-0的简单使用/">ThinkPhp5.0的简单使用</a>
